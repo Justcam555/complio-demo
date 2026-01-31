@@ -143,12 +143,14 @@
       background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       border-radius: 20px;
       border: 2px solid var(--border-soft);
+      touch-action: none;
     }
 
     .radar-axes {
       position: absolute;
       width: 100%;
       height: 100%;
+      pointer-events: none;
     }
 
     .radar-line-h {
@@ -180,6 +182,7 @@
       background: white;
       border-radius: 6px;
       border: 1px solid var(--border-soft);
+      pointer-events: none;
     }
 
     .radar-label.top { top: 10px; left: 50%; transform: translateX(-50%); color: #dc2626; }
@@ -215,12 +218,38 @@
       opacity: 0.5;
     }
 
+    .draggable-item.selected-for-tap {
+      border-color: var(--complio-violet);
+      background: #f3f4ff;
+      border-width: 3px;
+      box-shadow: 0 4px 12px rgba(113, 87, 255, 0.3);
+    }
+
     .draggable-item.placed {
       position: absolute;
       width: 140px;
       font-size: 12px;
       padding: 8px 12px;
       cursor: pointer;
+    }
+
+    .mobile-instruction {
+      display: none;
+      text-align: center;
+      padding: 10px;
+      background: #f3f4ff;
+      border: 2px solid var(--complio-violet);
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      color: var(--complio-violet);
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-instruction {
+        display: block;
+      }
     }
 
     /* Email correction */
@@ -264,12 +293,6 @@
       border-bottom: 2px solid #22c55e;
       padding: 2px 4px;
       border-radius: 3px;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
     }
 
     .explanation-box {
@@ -451,7 +474,7 @@
       font-size: 18px;
     }
 
-    /* Quiz specific */
+    /* Quiz */
     .quiz-question {
       background: #f8fafc;
       border: 2px solid var(--border-soft);
@@ -617,7 +640,6 @@
       margin-bottom: 6px;
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
       .nav {
         flex-direction: column;
@@ -656,11 +678,15 @@
       <button onclick="showFormat('quiz')">📝 Multiple Choice Quiz</button>
     </div>
 
-    <!-- Format 1: Risk Radar -->
+    <!-- Risk Radar -->
     <div id="radar" class="format-demo active">
       <div class="demo-header">
         <h2>🎯 Risk Radar</h2>
         <p class="subtitle">Drag each situation onto the radar based on risk level and urgency</p>
+      </div>
+
+      <div class="mobile-instruction">
+        📱 On mobile: Tap an item, then tap where to place it on the radar
       </div>
 
       <div class="progress-bar">
@@ -701,7 +727,7 @@
       <div class="result-message" id="radarResult"></div>
     </div>
 
-    <!-- Format 2: Correct the Email -->
+    <!-- Correct the Email -->
     <div id="email" class="format-demo">
       <div class="demo-header">
         <h2>📧 Correct the Email</h2>
@@ -749,7 +775,7 @@
       <div class="explanation-box" id="emailExplanation"></div>
     </div>
 
-    <!-- Format 3: Myth Busters -->
+    <!-- Myth Busters -->
     <div id="myth" class="format-demo">
       <div class="demo-header">
         <h2>💥 Myth Busters</h2>
@@ -778,7 +804,7 @@
       <div class="result-message" id="mythResult"></div>
     </div>
 
-    <!-- Format 4: Red Flag Hunt -->
+    <!-- Red Flag Hunt -->
     <div id="redflag" class="format-demo">
       <div class="demo-header">
         <h2>🚩 Red Flag Hunt</h2>
@@ -816,7 +842,7 @@
       <div class="result-message" id="flagResult"></div>
     </div>
 
-    <!-- Format 5: Multiple Choice Quiz -->
+    <!-- Multiple Choice Quiz -->
     <div id="quiz" class="format-demo">
       <div class="demo-header">
         <h2>📝 Multiple Choice Quiz</h2>
@@ -899,14 +925,16 @@
       }
     }
 
-    // RISK RADAR
+    // RISK RADAR with Touch Support
     let draggedElement = null;
+    let selectedItemForTap = null;
 
     document.addEventListener('DOMContentLoaded', function() {
       const items = document.querySelectorAll('.draggable-item');
       const container = document.getElementById('radarContainer');
 
       items.forEach(item => {
+        // Desktop drag support
         item.addEventListener('dragstart', (e) => {
           draggedElement = e.target;
           e.target.classList.add('dragging');
@@ -915,9 +943,23 @@
         item.addEventListener('dragend', (e) => {
           e.target.classList.remove('dragging');
         });
+
+        // Mobile touch support - tap to select
+        item.addEventListener('click', (e) => {
+          if (item.classList.contains('placed')) return;
+          
+          // Deselect previous selection
+          items.forEach(i => i.classList.remove('selected-for-tap'));
+          selectedItemForTap = null;
+          
+          // Select this item
+          item.classList.add('selected-for-tap');
+          selectedItemForTap = item;
+        });
       });
 
       if (container) {
+        // Desktop drag support
         container.addEventListener('dragover', (e) => {
           e.preventDefault();
         });
@@ -925,26 +967,39 @@
         container.addEventListener('drop', (e) => {
           e.preventDefault();
           if (draggedElement && !draggedElement.classList.contains('placed')) {
-            const rect = container.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            placeItemOnRadar(draggedElement, e.clientX, e.clientY, container);
+          }
+        });
 
-            draggedElement.classList.add('placed');
-            draggedElement.style.left = (x - 70) + 'px';
-            draggedElement.style.top = (y - 20) + 'px';
-            
-            container.appendChild(draggedElement);
-            
-            radarPlaced++;
-            updateRadarProgress();
-            
-            if (radarPlaced === 4) {
-              document.getElementById('radarCheckBtn').disabled = false;
-            }
+        // Mobile touch support - tap radar to place selected item
+        container.addEventListener('click', (e) => {
+          if (selectedItemForTap && !selectedItemForTap.classList.contains('placed')) {
+            placeItemOnRadar(selectedItemForTap, e.clientX, e.clientY, container);
+            selectedItemForTap.classList.remove('selected-for-tap');
+            selectedItemForTap = null;
           }
         });
       }
     });
+
+    function placeItemOnRadar(item, clientX, clientY, container) {
+      const rect = container.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      item.classList.add('placed');
+      item.style.left = (x - 70) + 'px';
+      item.style.top = (y - 20) + 'px';
+      
+      container.appendChild(item);
+      
+      radarPlaced++;
+      updateRadarProgress();
+      
+      if (radarPlaced === 4) {
+        document.getElementById('radarCheckBtn').disabled = false;
+      }
+    }
 
     function updateRadarProgress() {
       document.getElementById('radarProgress').style.width = (radarPlaced / 4 * 100) + '%';
@@ -956,12 +1011,14 @@
       
       items.forEach(item => {
         item.classList.remove('placed');
+        item.classList.remove('selected-for-tap');
         item.style.left = '';
         item.style.top = '';
         itemsContainer.appendChild(item);
       });
       
       radarPlaced = 0;
+      selectedItemForTap = null;
       updateRadarProgress();
       document.getElementById('radarCheckBtn').disabled = true;
       document.getElementById('radarResult').classList.remove('show');
