@@ -559,7 +559,80 @@
       font-size: 14px;
       margin-bottom: 6px;
     }
+/* Quiz specific */
+    .quiz-question {
+      background: #f8fafc;
+      border: 2px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 25px;
+      margin: 20px 0;
+    }
 
+    .quiz-question-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--complio-dark);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .quiz-option {
+      padding: 15px 20px;
+      background: white;
+      border: 2px solid var(--border-soft);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 15px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .quiz-option:hover {
+      border-color: var(--complio-violet);
+      background: #f8f9fa;
+    }
+
+    .quiz-option.selected {
+      border-color: var(--complio-violet);
+      background: #f3f4ff;
+      font-weight: 600;
+    }
+
+    .quiz-option.correct {
+      border-color: #22c55e;
+      background: #f0fdf4;
+      font-weight: 600;
+    }
+
+    .quiz-option.incorrect {
+      border-color: #ef4444;
+      background: #fef2f2;
+      font-weight: 600;
+    }
+
+    .quiz-option-letter {
+      font-weight: 700;
+      color: var(--complio-violet);
+      min-width: 24px;
+    }
+
+    .quiz-option.correct .quiz-option-letter {
+      color: #22c55e;
+    }
+
+    .quiz-option.incorrect .quiz-option-letter {
+      color: #ef4444;
+    }
+
+    /* Responsive */
     /* Responsive */
     @media (max-width: 768px) {
       .nav {
@@ -597,6 +670,7 @@
       <button onclick="showFormat('email')">📧 Correct the Email</button>
       <button onclick="showFormat('myth')">💥 Myth Busters</button>
       <button onclick="showFormat('redflag')">🚩 Red Flag Hunt</button>
+      <button onclick="showFormat('quiz')">📝 Multiple Choice Quiz</button>
     </div>
 
     <!-- Format 1: Risk Radar -->
@@ -754,6 +828,32 @@
       <div class="flags-counter">
         <div class="flags-found">Red flags found: <strong id="flagCount">0 / 4</strong></div>
         <button class="btn btn-primary" onclick="checkFlags()" id="flagCheckBtn" disabled>Submit</button>
+        <div class="result-message" id="flagResult"></div>
+    </div>
+
+    <!-- Format 5: Multiple Choice Quiz -->
+    <div id="quiz" class="format-demo">
+      <div class="demo-header">
+        <h2>📝 Multiple Choice Quiz</h2>
+        <p class="subtitle">Answer 3 questions about tuition fees and payment compliance</p>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%" id="quizProgress"></div>
+      </div>
+
+      <div id="quizContainer">
+        <!-- Question will be inserted here -->
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="checkQuiz()" id="quizCheckBtn" disabled>Check Answer</button>
+      </div>
+
+      <div class="result-message" id="quizResult"></div>
+    </div>
+
+  </div>
       </div>
 
       <div class="result-message" id="flagResult"></div>
@@ -769,6 +869,48 @@
     let mythQuestion = 1;
     let mythCorrect = 0;
     let flagsFound = new Set();
+    let flagsFound = new Set();
+
+    // Quiz state
+    let currentQuizQuestion = 0;
+    let quizSelection = null;
+    let quizCorrectCount = 0;
+
+    const quizQuestions = [
+      {
+        question: "A Nigerian student asks about paying their £18,000 tuition fee. They mention their local bank can only process Form A for £10,000. What should you advise?",
+        options: [
+          "Use an unofficial money exchanger to get the full amount in GBP quickly",
+          "Split the payment: £10,000 via Form A, remaining amount through a regulated alternative like an online payment provider",
+          "Pay what they can now and sort out the rest after arriving in the UK",
+          "Have a relative in another country make the payment on their behalf"
+        ],
+        correctIndex: 1,
+        explanation: "The correct approach is to split the payment using regulated channels. Form A has limits, but students should combine it with official payment methods (like Flywire, bank transfers from abroad, or other university-approved options). Never recommend unofficial exchangers or leaving payments incomplete before visa applications."
+      },
+      {
+        question: "A parent offers you a £200 gift card as thanks for helping their child get admitted. What should you do?",
+        options: [
+          "Accept it - it's a personal gift, not related to the admission decision",
+          "Accept it but report it to your manager",
+          "Politely decline and explain it could be seen as a bribe under UK law",
+          "Accept it and donate the value to charity"
+        ],
+        correctIndex: 2,
+        explanation: "Under the UK Bribery Act 2010, accepting gifts related to your professional services (even after the fact) can constitute bribery. The safest approach is to politely decline and explain your agency's policy. Even well-intentioned gifts can create compliance issues and damage your agency's reputation."
+      },
+      {
+        question: "A student's bank statement shows a large deposit of £30,000 two days before the date they need for their visa application. What should you do?",
+        options: [
+          "It's fine - the money is there now, which is what matters",
+          "Flag this as suspicious - UKVI requires funds to be held for 28 days minimum",
+          "Ask the student to get a letter from the bank confirming the deposit",
+          "Advise them to wait another 26 days before applying"
+        ],
+        correctIndex: 1,
+        explanation: "UKVI requires funds to be held for a consecutive 28-day period ending no more than 31 days before the visa application. A sudden large deposit just before application is a red flag for both visa officers and money laundering concerns. The student needs to wait the full 28 days from the deposit date, and you should verify the source of these funds."
+      }
+    ];
 
     // Navigation
     function showFormat(format) {
@@ -1055,6 +1197,118 @@
         <p><strong>Flag 4:</strong> Preloaded card - no financial trail, violates anti-money laundering requirements, most universities won't accept</p>
       `;
     }
+    // MULTIPLE CHOICE QUIZ
+    function renderQuiz() {
+      const container = document.getElementById('quizContainer');
+      const q = quizQuestions[currentQuizQuestion];
+      
+      container.innerHTML = `
+        <div class="quiz-question">
+          <div class="quiz-question-text">
+            <strong>Question ${currentQuizQuestion + 1} of ${quizQuestions.length}:</strong><br><br>
+            ${q.question}
+          </div>
+          <div class="quiz-options" id="quizOptions">
+            ${q.options.map((option, index) => `
+              <div class="quiz-option" onclick="selectQuizOption(${index})">
+                <span class="quiz-option-letter">${String.fromCharCode(65 + index)})</span>
+                <span>${option}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      
+      quizSelection = null;
+      document.getElementById('quizCheckBtn').disabled = true;
+      document.getElementById('quizResult').classList.remove('show');
+      updateQuizProgress();
+    }
+
+    function selectQuizOption(index) {
+      const options = document.querySelectorAll('.quiz-option');
+      options.forEach(opt => opt.classList.remove('selected'));
+      options[index].classList.add('selected');
+      quizSelection = index;
+      document.getElementById('quizCheckBtn').disabled = false;
+    }
+
+    function checkQuiz() {
+      const q = quizQuestions[currentQuizQuestion];
+      const options = document.querySelectorAll('.quiz-option');
+      const result = document.getElementById('quizResult');
+      
+      // Show correct answer in green
+      options[q.correctIndex].classList.add('correct');
+      
+      // If wrong answer was selected, show it in red
+      if (quizSelection !== q.correctIndex) {
+        options[quizSelection].classList.add('incorrect');
+        
+        result.className = 'result-message show error';
+        result.innerHTML = `
+          <h3>❌ Incorrect</h3>
+          <p><strong>The correct answer is ${String.fromCharCode(65 + q.correctIndex)}):</strong> ${q.options[q.correctIndex]}</p>
+          <p><strong>Explanation:</strong> ${q.explanation}</p>
+        `;
+      } else {
+        quizCorrectCount++;
+        result.className = 'result-message show success';
+        result.innerHTML = `
+          <h3>✅ Correct!</h3>
+          <p><strong>Explanation:</strong> ${q.explanation}</p>
+        `;
+      }
+      
+      // Disable further clicking
+      options.forEach(opt => opt.style.pointerEvents = 'none');
+      document.getElementById('quizCheckBtn').disabled = true;
+      
+      // Move to next question or show final score
+      setTimeout(() => {
+        currentQuizQuestion++;
+        if (currentQuizQuestion < quizQuestions.length) {
+          renderQuiz();
+        } else {
+          showQuizComplete();
+        }
+      }, 3500);
+    }
+
+    function showQuizComplete() {
+      const container = document.getElementById('quizContainer');
+      const result = document.getElementById('quizResult');
+      
+      container.innerHTML = `
+        <div class="quiz-question" style="text-align: center; padding: 40px;">
+          <h3 style="font-size: 24px; margin-bottom: 20px;">Quiz Complete!</h3>
+          <p style="font-size: 48px; margin: 20px 0;">${quizCorrectCount} / ${quizQuestions.length}</p>
+          <p style="font-size: 16px; color: var(--complio-grey);">
+            ${quizCorrectCount === quizQuestions.length ? 
+              "Perfect score! You have excellent knowledge of compliance requirements." :
+              quizCorrectCount >= 2 ?
+              "Good job! Review the explanations to strengthen your knowledge." :
+              "Keep learning! Review the British Council materials on these topics."}
+          </p>
+        </div>
+      `;
+      
+      result.classList.remove('show');
+      document.getElementById('quizCheckBtn').style.display = 'none';
+      
+      // Reset for next time
+      setTimeout(() => {
+        currentQuizQuestion = 0;
+        quizCorrectCount = 0;
+        document.getElementById('quizCheckBtn').style.display = 'block';
+      }, 5000);
+    }
+
+    function updateQuizProgress() {
+      document.getElementById('quizProgress').style.width = (currentQuizQuestion / quizQuestions.length * 100) + '%';
+    }
+
+  </script>
   </script>
 </body>
 </html>
