@@ -920,8 +920,13 @@
       document.getElementById(format).classList.add('active');
       event.target.classList.add('active');
       
-      currentFormat = format;
+        currentFormat = format;
+    
+    // Initialize quiz if that's the selected format
+    if (format === 'quiz' && currentQuizQuestion === 0) {
+      renderQuiz();
     }
+  }
 
     // RISK RADAR
     let draggedElement = null;
