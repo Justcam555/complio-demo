@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Complio Format Mockups - Interactive Demos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --complio-green: #2fad4c;
+      --complio-orange: #f46a2f;
+      --complio-violet: #7157ff;
+      --complio-dark: #24323f;
+      --complio-grey: #4b5a67;
+      --bg-soft: #f4f6f8;
+      --card-bg: #ffffff;
+      --border-soft: #e3e7ec;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-soft);
+      color: var(--complio-dark);
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--complio-green), #22b4d7, var(--complio-violet));
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 15px;
+      opacity: 0.95;
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .nav button {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px 20px;
+      border: 2px solid var(--complio-violet);
+      background: white;
+      color: var(--complio-violet);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav button:hover {
+      background: var(--complio-violet);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .nav button.active {
+      background: var(--complio-violet);
+      color: white;
+    }
+
+    .format-demo {
+      display: none;
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid var(--border-soft);
+      min-height: 500px;
+    }
+
+    .format-demo.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .demo-header {
+      border-bottom: 3px solid var(--complio-violet);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+
+    .demo-header h2 {
+      color: var(--complio-violet);
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .demo-header .subtitle {
+      color: var(--complio-grey);
+      font-size: 14px;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      background: #e3e7ec;
+      height: 8px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--complio-green), var(--complio-violet));
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    /* Risk Radar specific */
+    .radar-container {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      height: 400px;
+      margin: 30px auto;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 20px;
+      border: 2px solid var(--border-soft);
+    }
+
+    .radar-axes {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .radar-line-h {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #cbd5e1;
+      transform: translateY(-50%);
+    }
+
+    .radar-line-v {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #cbd5e1;
+      transform: translateX(-50%);
+    }
+
+    .radar-label {
+      position: absolute;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--complio-grey);
+      padding: 4px 10px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .radar-label.top { top: 10px; left: 50%; transform: translateX(-50%); color: #dc2626; }
+    .radar-label.right { right: 10px; top: 50%; transform: translateY(-50%); color: #ea580c; }
+    .radar-label.bottom { bottom: 10px; left: 50%; transform: translateX(-50%); color: #16a34a; }
+    .radar-label.left { left: 10px; top: 50%; transform: translateY(-50%); color: #3b82f6; }
+
+    .draggable-items {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .draggable-item {
+      padding: 12px 16px;
+      background: white;
+      border: 2px solid var(--border-soft);
+      border-radius: 12px;
+      cursor: move;
+      font-size: 14px;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .draggable-item:hover {
+      border-color: var(--complio-violet);
+      box-shadow: 0 4px 12px rgba(113, 87, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .draggable-item.dragging {
+      opacity: 0.5;
+    }
+
+    .draggable-item.placed {
+      position: absolute;
+      width: 140px;
+      font-size: 12px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    /* Email correction specific */
+    .email-container {
+      background: #f8f9fa;
+      border: 2px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .email-header {
+      color: var(--complio-grey);
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-soft);
+      font-size: 13px;
+    }
+
+    .email-body {
+      color: var(--complio-dark);
+    }
+
+    .error-word {
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 2px 0;
+    }
+
+    .error-word:hover {
+      background: #fef3c7;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .error-word.clicked {
+      background: #86efac;
+      border-bottom: 2px solid #22c55e;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .error-word.wrong {
+      background: #fecaca;
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .explanation-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f0fdf4;
+      border: 2px solid #86efac;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .explanation-box.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; max-height: 0; }
+      to { opacity: 1; max-height: 200px; }
+    }
+
+    .explanation-box h4 {
+      color: #16a34a;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .explanation-box p {
+      color: var(--complio-dark);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    /* Myth Busters specific */
+    .myth-card {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 3px solid #f59e0b;
+      border-radius: 16px;
+      padding: 25px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .myth-label {
+      display: inline-block;
+      background: #dc2626;
+      color: white;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .myth-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--complio-dark);
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+
+    .myth-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .myth-btn {
+      flex: 1;
+      max-width: 200px;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .myth-btn.true {
+      background: #22c55e;
+      color: white;
+    }
+
+    .myth-btn.false {
+      background: #ef4444;
+      color: white;
+    }
+
+    .myth-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .myth-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .streak-bet {
+      background: white;
+      border: 2px dashed var(--complio-violet);
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 13px;
+      color: var(--complio-grey);
+    }
+
+    .streak-bet strong {
+      color: var(--complio-violet);
+    }
+
+    /* Red Flag Hunt specific */
+    .scenario-box {
+      background: #f8fafc;
+      border: 2px solid var(--border-soft);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .scenario-label {
+      display: inline-block;
+      background: var(--complio-violet);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+    }
+
+    .clickable-text {
+      display: inline;
+      position: relative;
+    }
+
+    .flag-trigger {
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 2px 0;
+    }
+
+    .flag-trigger:hover {
+      background: #fef3c7;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .flag-trigger.found {
+      background: #86efac;
+      border-bottom: 2px solid #22c55e;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .flag-trigger.missed {
+      background: #fecaca;
+      border-bottom: 2px solid #ef4444;
+    }
+
+    .flags-counter {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 12px;
+      border: 2px solid var(--border-soft);
+    }
+
+    .flags-found {
+      font-size: 14px;
+      color: var(--complio-grey);
+    }
+
+    .flags-found strong {
+      color: var(--complio-violet);
+      font-size: 18px;
+    }
+
+    /* Action buttons */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--complio-violet);
+      color: white;
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      background: #5d3fd3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(113, 87, 255, 0.3);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--complio-violet);
+      border: 2px solid var(--complio-violet);
+    }
+
+    .btn-secondary:hover {
+      background: #f3f4f6;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Result messages */
+    .result-message {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 12px;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    .result-message.show {
+      display: block;
+    }
+
+    .result-message.success {
+      background: #f0fdf4;
+      border: 2px solid #86efac;
+    }
+
+    .result-message.success h3 {
+      color: #16a34a;
+      margin-bottom: 10px;
+    }
+
+    .result-message.error {
+      background: #fef2f2;
+      border: 2px solid #fca5a5;
+    }
+
+    .result-message.error h3 {
+      color: #dc2626;
+      margin-bottom: 10px;
+    }
+
+    .result-message p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--complio-dark);
+    }
+
+    .result-message ul {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+
+    .result-message li {
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav {
+        flex-direction: column;
+      }
+
+      .nav button {
+        width: 100%;
+      }
+
+      .radar-container {
+        height: 350px;
+      }
+
+      .myth-buttons {
+        flex-direction: column;
+      }
+
+      .myth-btn {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎮 Interactive Format Demos</h1>
+      <p>Click through each format to see how counsellors would interact with them</p>
+    </header>
+
+    <!-- Navigation -->
+    <div class="nav">
+      <button class="active" onclick="showFormat('radar')">🎯 Risk Radar</button>
+      <button onclick="showFormat('email')">📧 Correct the Email</button>
+      <button onclick="showFormat('myth')">💥 Myth Busters</button>
+      <button onclick="showFormat('redflag')">🚩 Red Flag Hunt</button>
+    </div>
+
+    <!-- Format 1: Risk Radar -->
+    <div id="radar" class="format-demo active">
+      <div class="demo-header">
+        <h2>🎯 Risk Radar</h2>
+        <p class="subtitle">Drag each situation onto the radar based on risk level and urgency</p>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%" id="radarProgress"></div>
+      </div>
+
+      <div class="radar-container" id="radarContainer">
+        <div class="radar-axes">
+          <div class="radar-line-h"></div>
+          <div class="radar-line-v"></div>
+        </div>
+        <div class="radar-label top">HIGH RISK</div>
+        <div class="radar-label right">URGENT</div>
+        <div class="radar-label bottom">LOW RISK</div>
+        <div class="radar-label left">NOT URGENT</div>
+      </div>
+
+      <div class="draggable-items" id="draggableItems">
+        <div class="draggable-item" draggable="true" data-correct="high-urgent">
+          🚨 Student offers you £500 cash gift for securing admission
+        </div>
+        <div class="draggable-item" draggable="true" data-correct="high-not-urgent">
+          ⚠️ Parent wants tuition refund sent to different country
+        </div>
+        <div class="draggable-item" draggable="true" data-correct="low-urgent">
+          📞 Student asking about payment deadline (due tomorrow)
+        </div>
+        <div class="draggable-item" draggable="true" data-correct="low-not-urgent">
+          💳 Bank transfer taking 3 business days to process
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="resetRadar()">Reset</button>
+        <button class="btn btn-primary" onclick="checkRadar()" id="radarCheckBtn" disabled>Check My Placement</button>
+      </div>
+
+      <div class="result-message" id="radarResult"></div>
+    </div>
+
+    <!-- Format 2: Correct the Email -->
+    <div id="email" class="format-demo">
+      <div class="demo-header">
+        <h2>📧 Correct the Email</h2>
+        <p class="subtitle">Read carefully and click on the 4 mistakes in this counsellor's email (hover over text to help spot them)</p>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%" id="emailProgress"></div>
+      </div>
+
+      <div class="email-container">
+        <div class="email-header">
+          <strong>To:</strong> priya.sharma@email.com<br>
+          <strong>From:</strong> counsellor@agency.com<br>
+          <strong>Subject:</strong> Re: Tuition Payment Question
+        </div>
+        <div class="email-body">
+          Dear Priya,<br><br>
+
+          Thanks for your question about paying your tuition fees. You can use 
+          <span class="error-word" data-error="1">any payment method you like</span> 
+          including bank transfer, credit card, or 
+          <span class="error-word" data-error="2">preloaded cards</span>.<br><br>
+
+          If you're having trouble accessing foreign currency in Nigeria, 
+          <span class="error-word" data-error="3">I can recommend a reliable money changer</span> 
+          who offers good rates. Many of our students use this service.<br><br>
+
+          The payment needs to arrive 
+          <span class="error-word" data-error="4">within 2-3 weeks</span>, 
+          so you have plenty of time.<br><br>
+
+          Let me know if you need anything else!<br><br>
+
+          Best regards,<br>
+          Sarah
+        </div>
+      </div>
+
+      <div class="flags-counter">
+        <div class="flags-found">Errors found: <strong id="emailCount">0 / 4</strong></div>
+        <button class="btn btn-primary" onclick="checkEmail()" id="emailCheckBtn" disabled>Submit</button>
+      </div>
+
+      <div class="explanation-box" id="emailExplanation"></div>
+    </div>
+
+    <!-- Format 3: Myth Busters -->
+    <div id="myth" class="format-demo">
+      <div class="demo-header">
+        <h2>💥 Myth Busters</h2>
+        <p class="subtitle">Is this statement TRUE or FALSE? Get 3 correct in a row to protect your streak!</p>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 33%" id="mythProgress"></div>
+      </div>
+
+      <div class="myth-card">
+        <div class="myth-label">MYTH OR FACT?</div>
+        <div class="myth-text" id="mythStatement">
+          "Unofficial money exchangers are acceptable if they're commonly used and recommended by other agencies"
+        </div>
+        <div class="myth-buttons">
+          <button class="myth-btn true" onclick="answerMyth(true)">TRUE</button>
+          <button class="myth-btn false" onclick="answerMyth(false)">FALSE</button>
+        </div>
+        <div class="streak-bet">
+          🔥 <strong>Streak Protection:</strong> Answer 3 correctly = +1 week streak bonus<br>
+          Miss one = your current streak resets to zero
+        </div>
+      </div>
+
+      <div class="result-message" id="mythResult"></div>
+    </div>
+
+    <!-- Format 4: Red Flag Hunt -->
+    <div id="redflag" class="format-demo">
+      <div class="demo-header">
+        <h2>🚩 Red Flag Hunt</h2>
+        <p class="subtitle">Read the scenario carefully and click on the 4 compliance red flags (hover over text to check different phrases)</p>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: 0%" id="flagProgress"></div>
+      </div>
+
+      <div class="scenario-box">
+        <div class="scenario-label">REAL SCENARIO</div>
+        <div class="clickable-text">
+          You receive an inquiry from 
+          <span class="flag-trigger" data-flag="1">Sarah Chen, age 17</span>, 
+          who wants to study Business Management at a UK university starting this September. 
+          She mentions that 
+          <span class="flag-trigger" data-flag="2">her father will pay the £25,000 tuition fee from his company business account</span>. 
+          <br><br>
+          During your consultation, Sarah asks if 
+          <span class="flag-trigger" data-flag="3">you can send the invoice to her father's business partner in Dubai</span> 
+          instead of directly to her father, as it would be "easier for their accounting."
+          <br><br>
+          She also mentions she can pay the full amount upfront 
+          <span class="flag-trigger" data-flag="4">using a preloaded card her uncle gave her</span>, 
+          which already has the full amount in GBP loaded on it.
+        </div>
+      </div>
+
+      <div class="flags-counter">
+        <div class="flags-found">Red flags found: <strong id="flagCount">0 / 4</strong></div>
+        <button class="btn btn-primary" onclick="checkFlags()" id="flagCheckBtn" disabled>Submit</button>
+      </div>
+
+      <div class="result-message" id="flagResult"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // Global state
+    let currentFormat = 'radar';
+    let radarPlaced = 0;
+    let emailFound = new Set();
+    let mythQuestion = 1;
+    let mythCorrect = 0;
+    let flagsFound = new Set();
+
+    // Navigation
+    function showFormat(format) {
+      document.querySelectorAll('.format-demo').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav button').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(format).classList.add('active');
+      event.target.classList.add('active');
+      
+      currentFormat = format;
+    }
+
+    // RISK RADAR
+    let draggedElement = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const items = document.querySelectorAll('.draggable-item');
+      const container = document.getElementById('radarContainer');
+
+      items.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          draggedElement = e.target;
+          e.target.classList.add('dragging');
+        });
+
+        item.addEventListener('dragend', (e) => {
+          e.target.classList.remove('dragging');
+        });
+      });
+
+      if (container) {
+        container.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+
+        container.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (draggedElement && !draggedElement.classList.contains('placed')) {
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            draggedElement.classList.add('placed');
+            draggedElement.style.left = (x - 70) + 'px';
+            draggedElement.style.top = (y - 20) + 'px';
+            
+            container.appendChild(draggedElement);
+            
+            radarPlaced++;
+            updateRadarProgress();
+            
+            if (radarPlaced === 4) {
+              document.getElementById('radarCheckBtn').disabled = false;
+            }
+          }
+        });
+      }
+    });
+
+    function updateRadarProgress() {
+      document.getElementById('radarProgress').style.width = (radarPlaced / 4 * 100) + '%';
+    }
+
+    function resetRadar() {
+      const items = document.querySelectorAll('.draggable-item.placed');
+      const itemsContainer = document.getElementById('draggableItems');
+      
+      items.forEach(item => {
+        item.classList.remove('placed');
+        item.style.left = '';
+        item.style.top = '';
+        itemsContainer.appendChild(item);
+      });
+      
+      radarPlaced = 0;
+      updateRadarProgress();
+      document.getElementById('radarCheckBtn').disabled = true;
+      document.getElementById('radarResult').classList.remove('show');
+    }
+
+    function checkRadar() {
+      const container = document.getElementById('radarContainer');
+      const rect = container.getBoundingClientRect();
+      const items = container.querySelectorAll('.draggable-item.placed');
+      
+      let correct = 0;
+      let feedback = [];
+
+      items.forEach(item => {
+        const itemRect = item.getBoundingClientRect();
+        const centerX = itemRect.left + itemRect.width / 2 - rect.left;
+        const centerY = itemRect.top + itemRect.height / 2 - rect.top;
+        
+        const width = rect.width;
+        const height = rect.height;
+        
+        // Determine quadrant
+        let placement = '';
+        if (centerY < height / 2) placement += 'high';
+        else placement += 'low';
+        
+        if (centerX > width / 2) placement += '-urgent';
+        else placement += '-not-urgent';
+        
+        const correctPlacement = item.dataset.correct;
+        
+        if (placement === correctPlacement) {
+          correct++;
+          item.style.borderColor = '#22c55e';
+        } else {
+          item.style.borderColor = '#ef4444';
+          feedback.push(`"${item.textContent.trim().substring(0, 40)}..." should be in ${correctPlacement.replace('-', ' / ')}`);
+        }
+      });
+
+      const result = document.getElementById('radarResult');
+      result.className = 'result-message show ' + (correct === 4 ? 'success' : 'error');
+      
+      if (correct === 4) {
+        result.innerHTML = `
+          <h3>✅ Perfect Judgment!</h3>
+          <p>You correctly assessed all risk levels and urgency. The cash gift is the highest priority red flag requiring immediate action, while the refund request is high risk but can be handled through proper channels.</p>
+        `;
+      } else {
+        result.innerHTML = `
+          <h3>❌ ${correct}/4 Correct</h3>
+          <p>Review your risk assessment:</p>
+          <ul>${feedback.map(f => `<li>${f}</li>`).join('')}</ul>
+        `;
+      }
+    }
+
+    // CORRECT THE EMAIL
+    document.addEventListener('click', function(e) {
+      if (currentFormat === 'email') {
+        const emailBody = document.querySelector('#email .email-body');
+        
+        if (e.target.classList.contains('error-word')) {
+          const errorNum = e.target.dataset.error;
+          
+          if (!emailFound.has(errorNum)) {
+            e.target.classList.add('clicked');
+            emailFound.add(errorNum);
+            updateEmailCount();
+            
+            if (emailFound.size === 4) {
+              document.getElementById('emailCheckBtn').disabled = false;
+            }
+          }
+        } else if (emailBody && emailBody.contains(e.target) && e.target.tagName !== 'BUTTON') {
+          // Clicked on non-error text - give subtle feedback
+          const tempFeedback = document.createElement('div');
+          tempFeedback.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #fef3c7; padding: 10px 15px; border-radius: 8px; border: 2px solid #f59e0b; font-size: 14px; z-index: 1000;';
+          tempFeedback.textContent = '❌ Not an error - keep looking!';
+          document.body.appendChild(tempFeedback);
+          
+          setTimeout(() => tempFeedback.remove(), 1500);
+        }
+      }
+    });
+
+    function updateEmailCount() {
+      document.getElementById('emailCount').textContent = emailFound.size + ' / 4';
+      document.getElementById('emailProgress').style.width = (emailFound.size / 4 * 100) + '%';
+    }
+
+    function checkEmail() {
+      const explanation = document.getElementById('emailExplanation');
+      explanation.className = 'explanation-box show';
+      explanation.innerHTML = `
+        <h4>✅ All Errors Found!</h4>
+        <p><strong>Error 1:</strong> "Any payment method" is too vague - should specify university's accepted methods only</p>
+        <p><strong>Error 2:</strong> Preloaded cards have no financial trail and violate anti-money laundering requirements</p>
+        <p><strong>Error 3:</strong> Never recommend unofficial money changers - they're unregulated and expose students to fraud</p>
+        <p><strong>Error 4:</strong> "2-3 weeks" is imprecise - should reference the actual deadline and allow buffer time</p>
+      `;
+    }
+
+    // MYTH BUSTERS
+    const myths = [
+      {
+        statement: "Unofficial money exchangers are acceptable if they're commonly used and recommended by other agencies",
+        answer: false,
+        explanation: "Even if common practice in some countries, unofficial money exchangers operate outside regulatory frameworks. They expose students to fraud, have no consumer protection, and can trigger UKVI money laundering concerns."
+      },
+      {
+        statement: "A student can pay tuition fees from their parent's business account as long as the relationship is verified",
+        answer: false,
+        explanation: "Using company funds for personal education expenses raises money laundering red flags. Tuition should be paid from personal/family accounts, not business accounts, even if the parent owns the business."
+      },
+      {
+        statement: "If a university doesn't explicitly prohibit preloaded cards, counsellors can recommend them to students",
+        answer: false,
+        explanation: "Most UK universities won't accept preloaded cards due to anti-money laundering regulations - they have no financial trail. Always verify payment methods with the specific university first."
+      }
+    ];
+
+    function answerMyth(answer) {
+      const currentMyth = myths[mythQuestion - 1];
+      const result = document.getElementById('mythResult');
+      const buttons = document.querySelectorAll('.myth-btn');
+      
+      buttons.forEach(btn => btn.disabled = true);
+
+      if (answer === currentMyth.answer) {
+        mythCorrect++;
+        result.className = 'result-message show success';
+        result.innerHTML = `
+          <h3>✅ Correct! (${mythCorrect}/3)</h3>
+          <p><strong>Why it's ${currentMyth.answer ? 'TRUE' : 'FALSE'}:</strong></p>
+          <p>${currentMyth.explanation}</p>
+        `;
+        
+        if (mythCorrect === 3) {
+          result.innerHTML += `<p style="margin-top: 15px;"><strong>🔥 Streak Protected! +1 Week Bonus</strong></p>`;
+        }
+      } else {
+        result.className = 'result-message show error';
+        result.innerHTML = `
+          <h3>❌ Incorrect - Streak Reset!</h3>
+          <p><strong>The correct answer is ${currentMyth.answer ? 'TRUE' : 'FALSE'}</strong></p>
+          <p>${currentMyth.explanation}</p>
+        `;
+        mythCorrect = 0;
+      }
+
+      setTimeout(() => {
+        if (mythQuestion < 3 && mythCorrect < 3) {
+          mythQuestion++;
+          document.getElementById('mythStatement').textContent = myths[mythQuestion - 1].statement;
+          buttons.forEach(btn => btn.disabled = false);
+          result.classList.remove('show');
+          updateMythProgress();
+        }
+      }, 3000);
+    }
+
+    function updateMythProgress() {
+      document.getElementById('mythProgress').style.width = (mythQuestion / 3 * 100) + '%';
+    }
+
+    // RED FLAG HUNT
+    document.addEventListener('click', function(e) {
+      if (currentFormat === 'redflag') {
+        const scenarioBox = document.querySelector('#redflag .scenario-box');
+        
+        if (e.target.classList.contains('flag-trigger')) {
+          const flagNum = e.target.dataset.flag;
+          
+          if (!flagsFound.has(flagNum)) {
+            e.target.classList.add('found');
+            flagsFound.add(flagNum);
+            updateFlagCount();
+            
+            if (flagsFound.size === 4) {
+              document.getElementById('flagCheckBtn').disabled = false;
+            }
+          }
+        } else if (scenarioBox && scenarioBox.contains(e.target) && e.target.tagName !== 'BUTTON' && !e.target.classList.contains('scenario-label')) {
+          // Clicked on non-flag text - give subtle feedback
+          const tempFeedback = document.createElement('div');
+          tempFeedback.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #fef3c7; padding: 10px 15px; border-radius: 8px; border: 2px solid #f59e0b; font-size: 14px; z-index: 1000;';
+          tempFeedback.textContent = '❌ Not a red flag - keep looking!';
+          document.body.appendChild(tempFeedback);
+          
+          setTimeout(() => tempFeedback.remove(), 1500);
+        }
+      }
+    });
+
+    function updateFlagCount() {
+      document.getElementById('flagCount').textContent = flagsFound.size + ' / 4';
+      document.getElementById('flagProgress').style.width = (flagsFound.size / 4 * 100) + '%';
+    }
+
+    function checkFlags() {
+      const result = document.getElementById('flagResult');
+      result.className = 'result-message show success';
+      result.innerHTML = `
+        <h3>✅ All Red Flags Identified!</h3>
+        <p><strong>Flag 1:</strong> Age 17 = Minor - requires guardian consent and additional safeguarding considerations</p>
+        <p><strong>Flag 2:</strong> Company account for personal education - potential money laundering concern, funds should come from personal/family account</p>
+        <p><strong>Flag 3:</strong> Third-party invoice request - major red flag for money laundering, invoice must match payer</p>
+        <p><strong>Flag 4:</strong> Preloaded card - no financial trail, violates anti-money laundering requirements, most universities won't accept</p>
+      `;
+    }
+  </script>
+</body>
+</html>
